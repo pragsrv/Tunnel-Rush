@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tunnel Rush: Typing Tunnel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(180deg, #0a0a0a 0%, #1a0033 50%, #000000 100%);
+            min-height: 100vh;
+            overflow: hidden;
+            color: #00ffff;
+        }
+
+        .game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .hud {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .hud-item {
+            background: rgba(0, 255, 255, 0.1);
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            padding: 10px 15px;
+            margin: 5px;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .lives {
+            color: #ff0080;
+            border-color: #ff0080;
+            box-shadow: 0 0 20px rgba(255, 0, 128, 0.3);
+        }
+
+        .input-buffer {
+            position: absolute;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 255, 255, 0.2);
+            border: 3px solid #00ffff;
+            border-radius: 15px;
+            padding: 15px 25px;
+            font-size: 24px;
+            min-width: 200px;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+            z-index: 100;
+        }
+
+        .game-area {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            background: 
+                radial-gradient(ellipse at center, transparent 20%, rgba(0, 0, 0, 0.8) 70%),
+                linear-gradient(180deg, transparent 0%, rgba(0, 255, 255, 0.05) 50%, transparent 100%);
+        }
+
+        .falling-word {
+            position: absolute;
+            font-size: 24px;
+            font-weight: bold;
+            color: #00ffff;
+            text-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff;
+            transform-origin: center;
+            animation: glow 2s ease-in-out infinite alternate;
+            z-index: 10;
+            white-space: nowrap;
+            user-select: none;
+            font-family: 'Courier New', monospace;
+        }
+
+        .falling-word.matched {
+            color: #00ff00 !important;
+            text-shadow: 0 0 20px #00ff00, 0 0 40px #00ff00;
+        }
+
+        .falling-word.missed {
+            color: #ff0000 !important;
+            text-shadow: 0 0 20px #ff0000, 0 0 40px #ff0000;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff; }
+            to { text-shadow: 0 0 30px #00ffff, 0 0 60px #00ffff, 0 0 80px #00ffff; }
+        }
+
+        .game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            border: 3px solid #ff0080;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            z-index: 200;
+            box-shadow: 0 0 50px rgba(255, 0, 128, 0.5);
+            display: none;
+        }
+
+        .game-over h2 {
+            color: #ff0080;
+            font-size: 36px;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px #ff0080;
+        }
+
+        .game-over p {
+            font-size: 20px;
+            margin: 10px 0;
+        }
+
+        .restart-btn {
+            background: linear-gradient(45deg, #00ffff, #ff0080);
+            border: none;
+            border-radius: 10px;
+            padding: 15px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .restart-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.7);
+        }
+
+        .start-screen {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            border: 3px solid #00ffff;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            z-index: 200;
+            box-shadow: 0 0 50px rgba(0, 255, 255, 0.5);
+        }
+
+        .start-screen h1 {
+            color: #00ffff;
+            font-size: 42px;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px #00ffff;
+        }
+
+        .start-screen p {
+            font-size: 18px;
+            margin: 15px 0;
+            line-height: 1.5;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #00ffff;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #00ffff;
+            animation: particle-float 3s linear infinite;
+        }
+
+        @keyframes particle-float {
+            0% { 
+                transform: translateY(-10px) scale(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            90% {
+                opacity: 1;
+            }
+            100% { 
+                transform: translateY(100vh) scale(0);
+                opacity: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hud {
+                font-size: 14px;
+            }
+            
+            .hud-item {
+                padding: 8px 12px;
+                font-size: 16px;
+            }
+            
+            .input-buffer {
+                font-size: 20px;
+                bottom: 80px;
+                padding: 12px 20px;
+            }
+            
+            .falling-word {
+                font-size: 20px;
+            }
+            
+            .start-screen h1 {
+                font-size: 32px;
+            }
+            
+            .start-screen p {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="start-screen" id="startScreen">
+            <h1>🚀 TUNNEL RUSH</h1>
+            <h2 style="color: #ff0080; margin-bottom: 30px;">Typing Tunnel</h2>
+            <p>Type the falling words before they reach the bottom!</p>
+            <p>• Start with 3 lives</p>
+            <p>• Speed increases with score</p>
+            <p>• Just start typing to begin!</p>
+            <button class="restart-btn" onclick="startGame()">START GAME</button>
+        </div>
+
+        <div class="hud">
+            <div class="hud-item">Score: <span id="score">0</span></div>
+            <div class="hud-item">Level: <span id="level">1</span></div>
+            <div class="hud-item lives">Lives: <span id="lives">3</span></div>
+        </div>
+
+        <div class="game-area" id="gameArea"></div>
+
+        <div class="input-buffer" id="inputBuffer" style="display: none;">
+            <span id="currentInput"></span>
+        </div>
+
+        <div class="game-over" id="gameOver">
+            <h2>GAME OVER</h2>
+            <p>Final Score: <span id="finalScore">0</span></p>
+            <p>Level Reached: <span id="finalLevel">1</span></p>
+            <button class="restart-btn" onclick="restartGame()">PLAY AGAIN</button>
+        </div>
+    </div>
+
+    <script>
+        class TypingTunnelGame {
+            constructor() {
+                this.gameArea = document.getElementById('gameArea');
+                this.scoreElement = document.getElementById('score');
+                this.livesElement = document.getElementById('lives');
+                this.levelElement = document.getElementById('level');
+                this.inputBuffer = document.getElementById('inputBuffer');
+                this.currentInputElement = document.getElementById('currentInput');
+                this.gameOverScreen = document.getElementById('gameOver');
+                this.startScreen = document.getElementById('startScreen');
+                
+                this.score = 0;
+                this.lives = 3;
+                this.level = 1;
+                this.currentInput = '';
+                this.fallingWords = [];
+                this.gameRunning = false;
+                this.spawnRate = 2000;
+                this.fallSpeed = 2;
+                
+                this.words = [
+                    'code', 'type', 'rush', 'speed', 'neon', 'glow', 'cyber', 'data',
+                    'byte', 'hack', 'loop', 'void', 'echo', 'sync', 'flux', 'zone',
+                    'grid', 'link', 'node', 'path', 'core', 'beam', 'wave', 'chip',
+                    'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l',
+                    'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'
+                ];
+                
+                this.init();
+            }
+            
+            init() {
+                document.addEventListener('keydown', (e) => this.handleKeyInput(e));
+                this.createParticles();
+                this.updateBackground();
+            }
+            
+            startGame() {
+                this.gameRunning = true;
+                this.score = 0;
+                this.lives = 3;
+                this.level = 1;
+                this.currentInput = '';
+                this.fallingWords = [];
+                this.spawnRate = 2000;
+                this.fallSpeed = 2;
+                
+                this.startScreen.style.display = 'none';
+                this.gameOverScreen.style.display = 'none';
+                this.inputBuffer.style.display = 'block';
+                
+                this.updateUI();
+                this.gameLoop();
+                this.spawnWord();
+                
+                // Play start sound
+                this.playSound(800, 0.1, 'sine');
+            }
+            
+            gameLoop() {
+                if (!this.gameRunning) return;
+                
+                this.updateWords();
+                this.checkCollisions();
+                
+                requestAnimationFrame(() => this.gameLoop());
+            }
+            
+            spawnWord() {
+                if (!this.gameRunning) return;
+                
+                const word = this.words[Math.floor(Math.random() * this.words.length)];
+                const wordElement = document.createElement('div');
+                wordElement.className = 'falling-word';
+                wordElement.textContent = word;
+                wordElement.dataset.word = word;
+                
+                // Random horizontal position
+                const maxX = this.gameArea.clientWidth - 100;
+                const x = Math.random() * maxX;
+                wordElement.style.left = x + 'px';
+                wordElement.style.top = '-50px';
+                
+                this.gameArea.appendChild(wordElement);
+                this.fallingWords.push({
+                    element: wordElement,
+                    word: word,
+                    y: -50,
+                    x: x,
+                    matched: false
+                });
+                
+                // Schedule next word spawn
+                const nextSpawn = Math.max(500, this.spawnRate - (this.level * 100));
+                setTimeout(() => this.spawnWord(), nextSpawn + Math.random() * 1000);
+            }
+            
+            updateWords() {
+                this.fallingWords = this.fallingWords.filter(wordObj => {
+                    if (wordObj.matched) return false;
+                    
+                    wordObj.y += this.fallSpeed + (this.level * 0.5);
+                    wordObj.element.style.top = wordObj.y + 'px';
+                    
+                    // Scale effect for 3D tunnel simulation
+                    const scale = 1 + (wordObj.y / this.gameArea.clientHeight) * 0.5;
+                    wordObj.element.style.transform = `scale(${scale})`;
+                    
+                    // Check if word reached bottom
+                    if (wordObj.y > this.gameArea.clientHeight) {
+                        this.missWord(wordObj);
+                        return false;
+                    }
+                    
+                    return true;
+                });
+            }
+            
+            handleKeyInput(e) {
+                if (!this.gameRunning && e.key !== 'Enter') {
+                    this.startGame();
+                    return;
+                }
+                
+                if (e.key === 'Backspace') {
+                    this.currentInput = this.currentInput.slice(0, -1);
+                } else if (e.key.length === 1 && e.key.match(/[a-zA-Z]/)) {
+                    this.currentInput += e.key.toLowerCase();
+                } else if (e.key === 'Enter') {
+                    this.currentInput = '';
+                }
+                
+                this.updateInputDisplay();
+                this.checkWordMatch();
+            }
+            
+            checkWordMatch() {
+                if (!this.currentInput) return;
+                
+                // Find matching word
+                const matchingWord = this.fallingWords.find(wordObj => 
+                    !wordObj.matched && wordObj.word.startsWith(this.currentInput)
+                );
+                
+                if (matchingWord) {
+                    matchingWord.element.classList.add('matched');
+                    
+                    // Complete match
+                    if (matchingWord.word === this.currentInput) {
+                        this.hitWord(matchingWord);
+                        this.currentInput = '';
+                        this.updateInputDisplay();
+                    }
+                } else if (this.currentInput.length > 0) {
+                    // No matching word found - clear input
+                    setTimeout(() => {
+                        this.currentInput = '';
+                        this.updateInputDisplay();
+                    }, 200);
+                }
+            }
+            
+            hitWord(wordObj) {
+                wordObj.matched = true;
+                wordObj.element.style.color = '#00ff00';
+                wordObj.element.style.textShadow = '0 0 30px #00ff00';
+                
+                // Animate word removal
+                wordObj.element.style.transition = 'all 0.3s ease';
+                wordObj.element.style.transform += ' scale(1.5)';
+                wordObj.element.style.opacity = '0';
+                
+                setTimeout(() => {
+                    if (wordObj.element.parentNode) {
+                        wordObj.element.parentNode.removeChild(wordObj.element);
+                    }
+                }, 300);
+                
+                // Update score
+                const points = wordObj.word.length * 10 * this.level;
+                this.score += points;
+                
+                // Level up every 500 points
+                const newLevel = Math.floor(this.score / 500) + 1;
+                if (newLevel > this.level) {
+                    this.level = newLevel;
+                    this.playSound(1200, 0.2, 'sine');
+                }
+                
+                this.updateUI();
+                this.playSound(600, 0.1, 'sine');
+                
+                // Create particle effect
+                this.createHitParticles(wordObj.element.offsetLeft, wordObj.y);
+            }
+            
+            missWord(wordObj) {
+                wordObj.element.classList.add('missed');
+                this.lives--;
+                
+                // Remove word element
+                setTimeout(() => {
+                    if (wordObj.element.parentNode) {
+                        wordObj.element.parentNode.removeChild(wordObj.element);
+                    }
+                }, 100);
+                
+                this.updateUI();
+                this.playSound(200, 0.2, 'sawtooth');
+                
+                if (this.lives <= 0) {
+                    this.gameOver();
+                }
+            }
+            
+            checkCollisions() {
+                // Remove words that are too far down
+                this.fallingWords = this.fallingWords.filter(wordObj => {
+                    return wordObj.y < this.gameArea.clientHeight + 100;
+                });
+            }
+            
+            updateUI() {
+                this.scoreElement.textContent = this.score;
+                this.livesElement.textContent = this.lives;
+                this.levelElement.textContent = this.level;
+            }
+            
+            updateInputDisplay() {
+                this.currentInputElement.textContent = this.currentInput || 'Start typing...';
+            }
+            
+            gameOver() {
+                this.gameRunning = false;
+                this.inputBuffer.style.display = 'none';
+                
+                document.getElementById('finalScore').textContent = this.score;
+                document.getElementById('finalLevel').textContent = this.level;
+                this.gameOverScreen.style.display = 'block';
+                
+                // Clear remaining words
+                this.fallingWords.forEach(wordObj => {
+                    if (wordObj.element.parentNode) {
+                        wordObj.element.parentNode.removeChild(wordObj.element);
+                    }
+                });
+                this.fallingWords = [];
+                
+                this.playSound(150, 0.5, 'sawtooth');
+            }
+            
+            restart() {
+                this.startScreen.style.display = 'block';
+                this.gameOverScreen.style.display = 'none';
+                this.inputBuffer.style.display = 'none';
+            }
+            
+            createParticles() {
+                setInterval(() => {
+                    if (Math.random() < 0.3) {
+                        const particle = document.createElement('div');
+                        particle.className = 'particle';
+                        particle.style.left = Math.random() * window.innerWidth + 'px';
+                        particle.style.animationDuration = (2 + Math.random() * 3) + 's';
+                        
+                        document.body.appendChild(particle);
+                        
+                        setTimeout(() => {
+                            if (particle.parentNode) {
+                                particle.parentNode.removeChild(particle);
+                            }
+                        }, 5000);
+                    }
+                }, 200);
+            }
+            
+            createHitParticles(x, y) {
+                for (let i = 0; i < 8; i++) {
+                    const particle = document.createElement('div');
+                    particle.style.position = 'absolute';
+                    particle.style.left = x + 'px';
+                    particle.style.top = y + 'px';
+                    particle.style.width = '4px';
+                    particle.style.height = '4px';
+                    particle.style.background = '#00ff00';
+                    particle.style.borderRadius = '50%';
+                    particle.style.boxShadow = '0 0 10px #00ff00';
+                    particle.style.pointerEvents = 'none';
+                    particle.style.zIndex = '50';
+                    
+                    const angle = (i / 8) * Math.PI * 2;
+                    const velocity = 50 + Math.random() * 50;
+                    const vx = Math.cos(angle) * velocity;
+                    const vy = Math.sin(angle) * velocity;
+                    
+                    this.gameArea.appendChild(particle);
+                    
+                    let particleX = x;
+                    let particleY = y;
+                    let opacity = 1;
+                    
+                    const animateParticle = () => {
+                        particleX += vx * 0.1;
+                        particleY += vy * 0.1;
+                        opacity -= 0.05;
+                        
+                        particle.style.left = particleX + 'px';
+                        particle.style.top = particleY + 'px';
+                        particle.style.opacity = opacity;
+                        
+                        if (opacity > 0) {
+                            requestAnimationFrame(animateParticle);
+                        } else {
+                            if (particle.parentNode) {
+                                particle.parentNode.removeChild(particle);
+                            }
+                        }
+                    };
+                    
+                    requestAnimationFrame(animateParticle);
+                }
+            }
+            
+            updateBackground() {
+                setInterval(() => {
+                    const hue = (this.level * 30) % 360;
+                    document.body.style.background = 
+                        `linear-gradient(180deg, #0a0a0a 0%, hsl(${hue}, 70%, 10%) 50%, #000000 100%)`;
+                }, 1000);
+            }
+            
+            playSound(frequency, duration, type = 'sine') {
+                try {
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.value = frequency;
+                    oscillator.type = type;
+                    
+                    gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+                    
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + duration);
+                } catch (e) {
+                    // Audio not supported
+                }
+            }
+        }
+        
+        // Initialize game
+        let game;
+        
+        function startGame() {
+            if (!game) {
+                game = new TypingTunnelGame();
+            }
+            game.startGame();
+        }
+        
+        function restartGame() {
+            game.restart();
+        }
+        
+        // Auto-initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            game = new TypingTunnelGame();
+        });
+    </script>
+</body>
+</html>
