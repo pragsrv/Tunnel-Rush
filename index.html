@@ -919,33 +919,28 @@
             }
             
             updateWords() {
-                const speedModifier = this.powerUps.slowTime ? 0.6 : 1;
-                const maxRange = Math.max(window.innerHeight * 2, 2000); // Maximum range to prevent idle crashes
-                
-                this.fallingWords = this.fallingWords.filter(wordObj => {
-                    if (wordObj.matched) return false;
-                    
-                    wordObj.y += (this.fallSpeed + (this.level * 0.2)) * speedModifier;
-                    wordObj.element.style.top = wordObj.y + 'px';
-                    
-                    const scale = 1 + (wordObj.y / this.gameArea.clientHeight) * 0.3;
-                    wordObj.element.style.transform = `scale(${scale})`;
-                    
-                    // Remove words that are too far down or have exceeded max range
-                    if (wordObj.y > this.gameArea.clientHeight || wordObj.y > maxRange) {
-                        // Only count as a miss if it's within the visible area
-                        if (wordObj.y <= this.gameArea.clientHeight) {
-                            this.missWord(wordObj);
-                        } else {
-                            // Clean up the DOM element without counting as a miss
-                            wordObj.element.remove();
-                        }
-                        return false;
-                    }
-                    
-                    return true;
-                });
-            }
+    const speedModifier = this.powerUps.slowTime ? 0.6 : 1;
+    
+    this.fallingWords = this.fallingWords.filter(wordObj => {
+        if (wordObj.matched) return false;
+        
+        wordObj.y += (this.fallSpeed + (this.level * 0.2)) * speedModifier;
+        wordObj.element.style.top = wordObj.y + 'px';
+        
+        const scale = 1 + (wordObj.y / this.gameArea.clientHeight) * 0.3;
+        wordObj.element.style.transform = `scale(${scale})`;
+        
+        // Check if word has fallen off the screen
+        if (wordObj.y > this.gameArea.clientHeight) {
+            // Count as a miss and reduce lives
+            this.missWord(wordObj);
+            return false;
+        }
+        
+        return true;
+    });
+}
+
             
             updatePowerUps() {
                 if (this.powerUpDuration > 0) {
@@ -1143,29 +1138,47 @@
             }
             
             missWord(wordObj) {
-                this.totalWords++;
-                
-                if (!this.powerUps.shield) {
-                    this.lives--;
-                    this.combo = 0;
-                }
-                
-                setTimeout(() => {
-                    if (wordObj.element.parentNode) {
-                        wordObj.element.parentNode.removeChild(wordObj.element);
-                    }
-                }, 100);
-                
-                this.updateUI();
-                
-                if (this.settings.soundEnabled) {
-                    this.playSound(200, 0.15);
-                }
-                
-                if (this.lives <= 0) {
-                    this.gameOver();
-                }
-            }
+    this.totalWords++;
+    
+    // Only reduce lives if shield is not active
+    if (!this.powerUps.shield) {
+        this.lives--;
+        this.combo = 0;
+        
+        // Visual feedback for missing a word
+        this.createFloatingText(
+            wordObj.element.offsetLeft, 
+            wordObj.y, 
+            'MISS', 
+            '#ff4444'
+        );
+    } else {
+        // Shield absorbed the hit
+        this.createFloatingText(
+            wordObj.element.offsetLeft, 
+            wordObj.y, 
+            'BLOCKED', 
+            '#7c3aed'
+        );
+    }
+    
+    // Remove the word element
+    if (wordObj.element && wordObj.element.parentNode) {
+        wordObj.element.parentNode.removeChild(wordObj.element);
+    }
+    
+    this.updateUI();
+    
+    if (this.settings.soundEnabled) {
+        this.playSound(200, 0.15);
+    }
+    
+    // Check for game over
+    if (this.lives <= 0) {
+        this.gameOver();
+    }
+}
+
             
             activatePowerUp(type) {
                 this.deactivatePowerUp();
