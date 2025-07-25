@@ -4,6 +4,9 @@ A modern, minimalist typing game built with HTML, CSS, and JavaScript that helps
 
 > This project was made by also taking help of Claude AI, Perplexity and Github Copilot
 
+![20250725-1055-02 0430643-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/d7eafa94-c157-4fe2-a445-9445166f5a72)
+
+
 ## Features
 
 ### Core Gameplay
