@@ -5,6 +5,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Typing Rush - With Animated Keyboard</title>
     <style>
+        :root {
+            /* Dark theme colors (default) */
+            --bg-primary: #1e1e1e;
+            --bg-secondary: #2c2e34;
+            --bg-tertiary: #3a3a3a;
+            --text-primary: #d1d0c5;
+            --text-secondary: #646669;
+            --border-color: #646669;
+            --accent-color: #e2462f;
+            --golden-color: #e2b714;
+            --power-up-color: #7c3aed;
+            --keyboard-border: #555;
+        }
+
+        :root[data-theme="light"] {
+            /* Light theme colors */
+            --bg-primary: #f5f5f5;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #e8e8e8;
+            --text-primary: #2c2e34;
+            --text-secondary: #646669;
+            --border-color: #cccccc;
+            --accent-color: #e2462f;
+            --golden-color: #d4af37;
+            --power-up-color: #6b21a8;
+            --keyboard-border: #cccccc;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -13,8 +41,8 @@
 
         body {
             font-family: 'Roboto Mono', 'Consolas', monospace;
-            background: #1e1e1e;
-            color: #d1d0c5;
+            background: var(--bg-primary);
+            color: var(--text-primary);
             overflow: hidden;
             height: 100vh;
         }
@@ -23,7 +51,7 @@
             position: relative;
             width: 100vw;
             height: 100vh;
-            background: #1e1e1e;
+            background: var(--bg-primary);
             display: flex;
             flex-direction: column;
         }
@@ -34,8 +62,8 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: #2c2e34;
-            border: 1px solid #646669;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
             border-radius: 8px;
             padding: 40px;
             text-align: center;
@@ -44,14 +72,14 @@
         }
 
         .start-screen h1 {
-            color: #e2b714;
+            color: var(--golden-color);
             font-size: 28px;
             margin-bottom: 16px;
             font-weight: 400;
         }
 
         .start-screen p {
-            color: #646669;
+            color: var(--text-secondary);
             margin: 12px 0;
             line-height: 1.6;
             font-size: 14px;
@@ -103,12 +131,12 @@
         }
 
         .hud-item {
-            background: #2c2e34;
-            border: 1px solid #646669;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
             border-radius: 4px;
             padding: 8px 16px;
             font-size: 13px;
-            color: #d1d0c5;
+            color: var(--text-primary);
             font-weight: 500;
         }
 
@@ -138,7 +166,7 @@
             position: absolute;
             font-size: 18px;
             font-weight: 400;
-            color: #d1d0c5;
+            color: var(--text-primary);
             user-select: none;
             transition: color 0.15s ease;
             font-family: 'Roboto Mono', monospace;
@@ -146,19 +174,19 @@
         }
 
         .falling-word.matched {
-            color: #e2462f;
+            color: var(--accent-color);
             background: rgba(226, 70, 47, 0.1);
             padding: 2px 4px;
             border-radius: 3px;
         }
 
         .falling-word.golden {
-            color: #e2b714;
+            color: var(--golden-color);
             font-weight: 500;
         }
 
         .falling-word.power-up {
-            color: #7c3aed;
+            color: var(--power-up-color);
             font-weight: 500;
         }
 
@@ -168,8 +196,8 @@
             bottom: 40px;
             left: 50%;
             transform: translateX(-50%);
-            background: #2c2e34;
-            border: 1px solid #646669;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
             border-radius: 8px;
             padding: 20px;
             display: none;
@@ -189,9 +217,9 @@
         }
 
         .key {
-            background: #3a3a3a;
-            border: 1px solid #555;
-            color: #d1d0c5;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--keyboard-border);
+            color: var(--text-primary);
             font-family: 'Roboto Mono', monospace;
             font-size: 16px;
             font-weight: 500;
@@ -288,8 +316,8 @@
             bottom: 280px;
             left: 50%;
             transform: translateX(-50%);
-            background: #2c2e34;
-            border: 2px solid #646669;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
             border-radius: 4px;
             padding: 16px 24px;
             font-size: 18px;
@@ -298,10 +326,11 @@
             display: none;
             font-family: 'Roboto Mono', monospace;
             z-index: 2;
+            color: var(--text-primary);
         }
 
         .input-buffer.active {
-            border-color: #e2462f;
+            border-color: var(--accent-color);
         }
 
         /* Power-up Indicator */
@@ -310,9 +339,9 @@
             top: 80px;
             left: 50%;
             transform: translateX(-50%);
-            background: #2c2e34;
-            border: 1px solid #7c3aed;
-            color: #7c3aed;
+            background: var(--bg-secondary);
+            border: 1px solid var(--power-up-color);
+            color: var(--power-up-color);
             padding: 8px 16px;
             border-radius: 4px;
             font-size: 13px;
@@ -326,8 +355,8 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: #2c2e34;
-            border: 1px solid #646669;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
             border-radius: 8px;
             padding: 40px;
             text-align: center;
@@ -338,7 +367,7 @@
         }
 
         .game-over h2 {
-            color: #e2462f;
+            color: var(--accent-color);
             margin-bottom: 20px;
             font-size: 24px;
             font-weight: 500;
@@ -542,6 +571,13 @@
                 <label>keyboard animations</label>
                 <input type="checkbox" id="keyboardAnimations" checked>
             </div>
+            <div class="setting-row">
+                <label>theme</label>
+                <select id="theme">
+                    <option value="dark" selected>dark</option>
+                    <option value="light">light</option>
+                </select>
+            </div>
             <button class="btn" onclick="hideSettings()">close</button>
         </div>
 
@@ -556,6 +592,7 @@
                 <div class="hud-item warning">lives <span id="lives">3</span></div>
                 <div class="hud-item">wpm <span id="wpm">0</span></div>
                 <div class="hud-item">acc <span id="accuracy">100</span>%</div>
+                <div class="hud-item" id="themeToggle" onclick="game.toggleTheme()">theme</div>
                 <div class="hud-item" id="pauseButton" onclick="game.togglePause()">pause (esc)</div>
             </div>
         </div>
@@ -687,7 +724,8 @@
                     difficulty: 'normal',
                     soundEnabled: true,
                     showKeyboard: true,
-                    keyboardAnimations: true
+                    keyboardAnimations: true,
+                    theme: 'dark'
                 };
                 
                 // Word pools
@@ -735,14 +773,33 @@
                 localStorage.setItem('monkeyTypeRushSettings', JSON.stringify(this.settings));
             }
             
+            toggleTheme() {
+                this.settings.theme = this.settings.theme === 'dark' ? 'light' : 'dark';
+                document.getElementById('theme').value = this.settings.theme;
+                this.applySettings();
+                this.saveSettings();
+                
+                // Update the theme toggle button text
+                const themeToggle = document.getElementById('themeToggle');
+                themeToggle.textContent = `theme (${this.settings.theme})`;
+            }
+            
             applySettings() {
                 document.getElementById('difficulty').value = this.settings.difficulty;
                 document.getElementById('soundEnabled').checked = this.settings.soundEnabled;
                 document.getElementById('showKeyboard').checked = this.settings.showKeyboard;
                 document.getElementById('keyboardAnimations').checked = this.settings.keyboardAnimations;
+                document.getElementById('theme').value = this.settings.theme;
+                
+                // Update theme toggle button
+                const themeToggle = document.getElementById('themeToggle');
+                if (themeToggle) {
+                    themeToggle.textContent = `theme (${this.settings.theme})`;
+                }
                 
                 // Apply visual settings
                 this.virtualKeyboard.style.display = this.settings.showKeyboard ? 'block' : 'none';
+                document.documentElement.setAttribute('data-theme', this.settings.theme);
                 
                 const difficultySettings = {
                     easy: { spawnRate: 2500, fallSpeed: 1.5, lives: 5 },
@@ -863,6 +920,7 @@
             
             updateWords() {
                 const speedModifier = this.powerUps.slowTime ? 0.6 : 1;
+                const maxRange = Math.max(window.innerHeight * 2, 2000); // Maximum range to prevent idle crashes
                 
                 this.fallingWords = this.fallingWords.filter(wordObj => {
                     if (wordObj.matched) return false;
@@ -873,8 +931,15 @@
                     const scale = 1 + (wordObj.y / this.gameArea.clientHeight) * 0.3;
                     wordObj.element.style.transform = `scale(${scale})`;
                     
-                    if (wordObj.y > this.gameArea.clientHeight) {
-                        this.missWord(wordObj);
+                    // Remove words that are too far down or have exceeded max range
+                    if (wordObj.y > this.gameArea.clientHeight || wordObj.y > maxRange) {
+                        // Only count as a miss if it's within the visible area
+                        if (wordObj.y <= this.gameArea.clientHeight) {
+                            this.missWord(wordObj);
+                        } else {
+                            // Clean up the DOM element without counting as a miss
+                            wordObj.element.remove();
+                        }
                         return false;
                     }
                     
@@ -1212,6 +1277,7 @@
                 this.settings.soundEnabled = document.getElementById('soundEnabled').checked;
                 this.settings.showKeyboard = document.getElementById('showKeyboard').checked;
                 this.settings.keyboardAnimations = document.getElementById('keyboardAnimations').checked;
+                this.settings.theme = document.getElementById('theme').value;
                 
                 this.saveSettings();
                 this.applySettings();

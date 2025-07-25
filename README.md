@@ -14,6 +14,7 @@ A modern, minimalist typing game built with HTML, CSS, and JavaScript that helps
 - Lives system with visual indicators
 - Real-time WPM (Words Per Minute) tracking
 - Accuracy percentage display
+- Dark Mode Toggle Button
 
 ### Special Elements
 - **Golden Words**: Special words worth 3x points
